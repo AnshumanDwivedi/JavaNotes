@@ -1,0 +1,41 @@
+from flask import Flask, jsonify, request
+from pymongo import MongoClient
+from cachetools import TTLCache
+
+app = Flask(__name__)
+
+# Initialize MongoDB client
+client = MongoClient('mongodb://localhost:27017/')
+db = client['my_database']
+collection = db['my_collection']
+
+# Initialize in-memory cache
+cache = TTLCache(maxsize=1000, ttl=3600)
+
+# Route to retrieve data from MongoDB or cache
+@app.route('/data/<key>', methods=['GET'])
+def get_data(key):
+    if key in cache:
+        return jsonify(cache[key])
+    else:
+        data = collection.find_one({'_id': key})
+        if data:
+            cache[key] = data
+            return jsonify(data)
+        else:
+            return jsonify({'error': 'Data not found'}), 404
+
+# Route to insert data into MongoDB and cache
+@app.route('/data', methods=['POST'])
+def insert_data():
+    data = request.get_json()
+    key = data.get('key')
+    value = data.get('value')
+    if not key or not value:
+        return jsonify({'error': 'Missing key or value in request'}), 400
+    collection.update_one({'_id': key}, {'$set': {'value': value}}, upsert=True)
+    cache[key] = {'value': value}
+    return jsonify({'success': True})
+
+if __name__ == '__main__':
+    app.run(debug=True)
