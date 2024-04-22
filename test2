@@ -4,6 +4,58 @@ Sub CompareAndMarkStatus()
     Dim ws1 As Worksheet, ws2 As Worksheet
     Dim lastRow1 As Long, lastRow2 As Long
     Dim idDict As Object
+    Dim i As Long, j As Long
+    Dim matchFound As Boolean
+    
+    ' Initialize dictionary to store unique keys from sheet2
+    Set idDict = CreateObject("Scripting.Dictionary")
+    
+    ' Set workbook and worksheet variables
+    Set wb = ThisWorkbook
+    Set ws1 = wb.Sheets("Sheet1") ' Change "Sheet1" to the name of your first sheet
+    Set ws2 = wb.Sheets("Sheet2") ' Change "Sheet2" to the name of your second sheet
+    
+    ' Find last row of data in both sheets
+    lastRow1 = ws1.Cells(ws1.Rows.Count, "A").End(xlUp).Row
+    lastRow2 = ws2.Cells(ws2.Rows.Count, "A").End(xlUp).Row
+    
+    ' Build keys from sheet2 based on multiple columns
+    For i = 2 To lastRow2
+        Dim key As String
+        key = ""
+        For j = 1 To 4 ' Adjust the range based on the number of columns you want to compare
+            key = key & ws2.Cells(i, j).Value & "|"
+        Next j
+        idDict(key) = True
+    Next i
+    
+    ' Compare keys and mark status in sheet1
+    For i = 2 To lastRow1
+        Dim key As String
+        key = ""
+        For j = 1 To 4 ' Adjust the range based on the number of columns you want to compare
+            key = key & ws1.Cells(i, j).Value & "|"
+        Next j
+        
+        ' Check if the key exists in the dictionary
+        If idDict.exists(key) Then
+            ' Key found in sheet2, update status column in sheet1
+            ws1.Cells(i, 5).Value = "Updated" ' Assuming "Status" column is the 5th column
+        Else
+            ' Key not found in sheet2, mark status column in sheet1 as "Fixed"
+            ws1.Cells(i, 5).Value = "Fixed" ' Assuming "Status" column is the 5th column
+        End If
+    Next i
+    
+    MsgBox "Comparison and update completed successfully."
+    
+End Sub
+
+Sub CompareAndMarkStatus()
+    Dim wb As Workbook
+    Dim ws1 As Worksheet, ws2 As Worksheet
+    Dim lastRow1 As Long, lastRow2 As Long
+    Dim idDict As Object
     Dim i As Long
     
     ' Initialize dictionary to store IDs from sheet2
