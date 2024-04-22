@@ -1,90 +1,9 @@
-
 Sub CompareAndMarkStatus()
     Dim wb As Workbook
     Dim ws1 As Worksheet, ws2 As Worksheet
     Dim lastRow1 As Long, lastRow2 As Long
     Dim idDict As Object
     Dim i As Long, j As Long
-    Dim matchFound As Boolean
-    Dim compareColumns As String
-    Dim compareArray As Variant
-    Dim key As String
-    
-    ' Initialize dictionary to store unique keys from sheet2
-    Set idDict = CreateObject("Scripting.Dictionary")
-    
-    ' Set workbook and worksheet variables
-    Set wb = ThisWorkbook
-    Set ws1 = wb.Sheets("Sheet1") ' Change "Sheet1" to the name of your first sheet
-    Set ws2 = wb.Sheets("Sheet2") ' Change "Sheet2" to the name of your second sheet
-    
-    ' Get columns to compare from user
-    compareColumns = InputBox("Enter column numbers separated by commas to compare (e.g., 1,2,3):")
-    If compareColumns = "" Then Exit Sub ' Exit if user cancels
-    
-    ' Convert input string to an array of column numbers
-    compareArray = Split(compareColumns, ",")
-    
-    ' Find last row of data in both sheets
-    lastRow1 = ws1.Cells(ws1.Rows.Count, "A").End(xlUp).Row
-    lastRow2 = ws2.Cells(ws2.Rows.Count, "A").End(xlUp).Row
-    
-    ' Build keys from sheet2 based on selected columns
-    For i = 2 To lastRow2
-        key = ""
-        For j = LBound(compareArray) To UBound(compareArray)
-            key = key & ws2.Cells(i, compareArray(j)).Value & "|"
-        Next j
-        idDict(key) = True
-    Next i
-    
-    ' Compare keys and mark status in sheet1
-    For i = 2 To lastRow1
-        key = ""
-        For j = LBound(compareArray) To UBound(compareArray)
-            key = key & ws1.Cells(i, compareArray(j)).Value & "|"
-        Next j
-        
-        ' Check if the key exists in the dictionary
-        If idDict.exists(key) Then
-            ' Key found in sheet2, update status column in sheet1
-            ws1.Cells(i, UBound(compareArray) + 1).Value = "Updated" ' Assuming "Status" column is the next column after the last compared column
-        Else
-            ' Key not found in sheet2, mark status column in sheet1 as "Fixed"
-            ws1.Cells(i, UBound(compareArray) + 1).Value = "Fixed" ' Assuming "Status" column is the next column after the last compared column
-        End If
-    Next i
-    
-    ' Add rows that are present in Sheet1 but not in Sheet2
-    For i = 2 To lastRow1
-        key = ""
-        For j = LBound(compareArray) To UBound(compareArray)
-            key = key & ws1.Cells(i, compareArray(j)).Value & "|"
-        Next j
-        
-        ' Check if the key is not in the dictionary
-        If Not idDict.exists(key) Then
-            ' Add the row to Sheet2
-            lastRow2 = lastRow2 + 1
-            For j = 1 To UBound(compareArray)
-                ws2.Cells(lastRow2, j).Value = ws1.Cells(i, compareArray(j)).Value
-            Next j
-            ws2.Cells(lastRow2, UBound(compareArray) + 1).Value = "Added" ' Assuming "Status" column is the next column after the last compared column
-        End If
-    Next i
-    
-    MsgBox "Comparison and update completed successfully."
-    
-End Sub
-
-
-Sub CompareAndMarkStatus()
-    Dim wb As Workbook
-    Dim ws1 As Worksheet, ws2 As Worksheet
-    Dim lastRow1 As Long, lastRow2 As Long
-    Dim idDict As Object
-    Dim i As Long, j As Long
-    Dim matchFound As Boolean
     Dim compareColumns As String
     Dim compareArray As Variant
     
@@ -97,10 +16,10 @@ Sub CompareAndMarkStatus()
     Set ws2 = wb.Sheets("Sheet2") ' Change "Sheet2" to the name of your second sheet
     
     ' Get columns to compare from user
-    compareColumns = InputBox("Enter column numbers separated by commas to compare (e.g., 1,2,3):")
+    compareColumns = InputBox("Enter column names separated by commas to compare (e.g., ID,Name,Image Name):")
     If compareColumns = "" Then Exit Sub ' Exit if user cancels
     
-    ' Convert input string to an array of column numbers
+    ' Convert input string to an array of column names
     compareArray = Split(compareColumns, ",")
     
     ' Find last row of data in both sheets
@@ -112,7 +31,7 @@ Sub CompareAndMarkStatus()
         Dim key As String
         key = ""
         For j = LBound(compareArray) To UBound(compareArray)
-            key = key & ws2.Cells(i, compareArray(j)).Value & "|"
+            key = key & ws2.Cells(i, ws2.Rows(1).Find(compareArray(j)).Column).Value & "|"
         Next j
         idDict(key) = True
     Next i
@@ -122,108 +41,16 @@ Sub CompareAndMarkStatus()
         Dim key As String
         key = ""
         For j = LBound(compareArray) To UBound(compareArray)
-            key = key & ws1.Cells(i, compareArray(j)).Value & "|"
+            key = key & ws1.Cells(i, ws1.Rows(1).Find(compareArray(j)).Column).Value & "|"
         Next j
         
         ' Check if the key exists in the dictionary
         If idDict.exists(key) Then
             ' Key found in sheet2, update status column in sheet1
-            ws1.Cells(i, UBound(compareArray) + 1).Value = "Updated" ' Assuming "Status" column is the next column after the last compared column
+            ws1.Cells(i, ws1.Rows(1).Find("Status").Column).Value = "Open" ' Assuming "Status" column exists in the first sheet
         Else
             ' Key not found in sheet2, mark status column in sheet1 as "Fixed"
-            ws1.Cells(i, UBound(compareArray) + 1).Value = "Fixed" ' Assuming "Status" column is the next column after the last compared column
-        End If
-    Next i
-    
-    MsgBox "Comparison and update completed successfully."
-    
-End Sub
-
-
-Sub CompareAndMarkStatus()
-    Dim wb As Workbook
-    Dim ws1 As Worksheet, ws2 As Worksheet
-    Dim lastRow1 As Long, lastRow2 As Long
-    Dim idDict As Object
-    Dim i As Long, j As Long
-    Dim matchFound As Boolean
-    
-    ' Initialize dictionary to store unique keys from sheet2
-    Set idDict = CreateObject("Scripting.Dictionary")
-    
-    ' Set workbook and worksheet variables
-    Set wb = ThisWorkbook
-    Set ws1 = wb.Sheets("Sheet1") ' Change "Sheet1" to the name of your first sheet
-    Set ws2 = wb.Sheets("Sheet2") ' Change "Sheet2" to the name of your second sheet
-    
-    ' Find last row of data in both sheets
-    lastRow1 = ws1.Cells(ws1.Rows.Count, "A").End(xlUp).Row
-    lastRow2 = ws2.Cells(ws2.Rows.Count, "A").End(xlUp).Row
-    
-    ' Build keys from sheet2 based on multiple columns
-    For i = 2 To lastRow2
-        Dim key As String
-        key = ""
-        For j = 1 To 4 ' Adjust the range based on the number of columns you want to compare
-            key = key & ws2.Cells(i, j).Value & "|"
-        Next j
-        idDict(key) = True
-    Next i
-    
-    ' Compare keys and mark status in sheet1
-    For i = 2 To lastRow1
-        Dim key As String
-        key = ""
-        For j = 1 To 4 ' Adjust the range based on the number of columns you want to compare
-            key = key & ws1.Cells(i, j).Value & "|"
-        Next j
-        
-        ' Check if the key exists in the dictionary
-        If idDict.exists(key) Then
-            ' Key found in sheet2, update status column in sheet1
-            ws1.Cells(i, 5).Value = "Updated" ' Assuming "Status" column is the 5th column
-        Else
-            ' Key not found in sheet2, mark status column in sheet1 as "Fixed"
-            ws1.Cells(i, 5).Value = "Fixed" ' Assuming "Status" column is the 5th column
-        End If
-    Next i
-    
-    MsgBox "Comparison and update completed successfully."
-    
-End Sub
-
-Sub CompareAndMarkStatus()
-    Dim wb As Workbook
-    Dim ws1 As Worksheet, ws2 As Worksheet
-    Dim lastRow1 As Long, lastRow2 As Long
-    Dim idDict As Object
-    Dim i As Long
-    
-    ' Initialize dictionary to store IDs from sheet2
-    Set idDict = CreateObject("Scripting.Dictionary")
-    
-    ' Set workbook and worksheet variables
-    Set wb = ThisWorkbook
-    Set ws1 = wb.Sheets("Sheet1") ' Change "Sheet1" to the name of your first sheet
-    Set ws2 = wb.Sheets("Sheet2") ' Change "Sheet2" to the name of your second sheet
-    
-    ' Find last row of data in both sheets
-    lastRow1 = ws1.Cells(ws1.Rows.Count, "A").End(xlUp).Row
-    lastRow2 = ws2.Cells(ws2.Rows.Count, "A").End(xlUp).Row
-    
-    ' Extract IDs from sheet2 and store them in the dictionary
-    For i = 2 To lastRow2
-        idDict(ws2.Cells(i, 1).Value) = True
-    Next i
-    
-    ' Compare IDs and mark status in sheet1
-    For i = 2 To lastRow1
-        If idDict.exists(ws1.Cells(i, 1).Value) Then
-            ' ID found in sheet2, update status column in sheet1
-            ws1.Cells(i, 3).Value = "Updated"
-        Else
-            ' ID not found in sheet2, mark status column in sheet1 as "Fixed"
-            ws1.Cells(i, 3).Value = "Fixed"
+            ws1.Cells(i, ws1.Rows(1).Find("Status").Column).Value = "Fixed" ' Assuming "Status" column exists in the first sheet
         End If
     Next i
     
