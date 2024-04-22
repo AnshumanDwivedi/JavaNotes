@@ -36,6 +36,26 @@ Sub CompareAndMarkStatus()
         idDict(key) = True
     Next i
     
+    ' Add columns from sheet2 to sheet1 if they are not present in sheet1
+    For j = 1 To ws2.Cells(1, ws2.Columns.Count).End(xlToLeft).Column
+        Dim columnExists As Boolean
+        columnExists = False
+        For i = LBound(compareArray) To UBound(compareArray)
+            If ws2.Cells(1, j).Value = compareArray(i) Then
+                columnExists = True
+                Exit For
+            End If
+        Next i
+        If Not columnExists Then
+            ' Add column to sheet1
+            ws1.Cells(1, ws1.Cells(1, ws1.Columns.Count).End(xlToLeft).Column + 1).Value = ws2.Cells(1, j).Value
+            ' Copy data from sheet2 to sheet1 for the added column
+            For i = 2 To lastRow1
+                ws1.Cells(i, ws1.Cells(1, ws1.Columns.Count).End(xlToLeft).Column).Value = ws2.Cells(i, j).Value
+            Next i
+        End If
+    Next j
+    
     ' Compare keys and mark status in sheet1
     For i = 2 To lastRow1
         Dim key As String
